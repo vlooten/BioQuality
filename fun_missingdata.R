@@ -31,72 +31,56 @@ JumpingDensity <- function(inputData=NA, windowSize = 60, name_data="BIO", borne
   return(out)
 }
 
-detect_missing <- function (df = NA, borne =5 , nomfichier = "BIO.1000", rept_save = paste0(rept2,"missingdata/graph_md/")){
+detect_missing <- function (df = NA, nomfichier = "BIO.1000", rept_save = paste0(rept2,"missingdata/graph_md/")){
   # borne : nombre d'examen minimum pour considérer que la fenetre n'est pas vide
   # nomfichier : nom de l'examen bio, utilisé uniquement pour la sauvegarde
   # dans l'article on utilise 1
   
+  # Test
+  # nomfichier <- "BIO.1015"
+  # df <- loaddata("BIO:1015")
+  
   print(paste0("Start:", nomfichier) )
-  nomfichier <- make.names(nomfichier)
-  res <- JumpingDensity(inputData = df, windowSize = 60)
-  res$startT <- as.Date(res$startT, origin="1970-01-01")
-  res$endT <- as.Date(res$endT, origin="1970-01-01")
   
-  startT_MD <- vector()
-  it_startT_MD <- 1
-  endT_MD <- vector()
-  it_endT_MD <- 1 
-  
-  for (i in 1:length(res$startT))
-  {
-    if(res[i,]$outData < borne) # marquer MD
-    {
-      if (i == 1 ) ## Première fenêtre est MD
-      {
-        startT_MD[it_startT_MD] <- res[i,]$startT
-        it_startT_MD <- it_startT_MD +1
+  dataseg <- df %>% group_by(date) %>% summarise(value=length(value))
+  # Completion
+  dataseg0 <- as.data.frame(cbind(date=seq(min(dataseg$date, na.rm=T),max(dataseg$date, na.rm=T),1),value=0),stringsAsFactors = F)
+  dataseg0 <- dataseg0[which(!(dataseg0$date %in% dataseg$date) ),]
+  dataseg <- rbind(dataseg,dataseg0)
+  dataseg <- dataseg[order(dataseg$date, decreasing = F),]
+  #
+  data_dec <- tryCatch(decompose(ts(dataseg$value, frequency = 365 )), error=function(e) NULL)
+  if(!is.null(data_dec)){
+    
+    dataseg2 <- as.data.frame(cbind(value=data_dec$trend,start=dataseg$date, end=NA))
+    dataseg2 <- dataseg2[!is.na(dataseg2$value),]
+    out.lm <- tryCatch(lm(value~start, data=dataseg2),
+                       error=function(e) NULL)
+    if(is.null(out.lm)){
+      return(NULL)
+    }else{
+      segFit <- tryCatch(segmented(out.lm,seg.Z=~start,psi=list(start=NA),
+                                   control=seg.control(display=FALSE, K=10, stop.if.error=FALSE, n.boot=0, it.max=500, toll = 1e-08)),
+                         error=function(e) NA)
+      times_seg <- tryCatch(confint.segmented(segFit), error=function(e) NULL) # If no breakpoint
+      if(!is.null(times_seg)){
+        
+        x <- sign(slope(segFit)$start[,1])
+        if(length(x)>1){
+          y <- names(x)[paste0(c(0,x[-length(x)]),x) %in% "-11"]
+          y <- paste0("psi",as.numeric(gsub("slope","",y))-1,".start")
+          localb <- print(segFit)
+          localb <- localb$psi[rownames(localb$psi) %in% y,2]
+        }
+        missingData <- as.data.frame(cbind(namefile=nomfichier,startT_MD=round(as.numeric(localb)), endT_MD=NA), stringsAsFactors = F)
+        missingData$startT_MD <- as.numeric(missingData$startT_MD)
+        return(missingData)
       }else{
-        if (res[i-1,]$outData < borne) ## la fenêtre précédente, est déjà MD
-        {
-          ### Ne rien faire 
-          print("Still missing.")
-          
-        }else{
-          ### la fenêtre précédente n'est pas MD
-          startT_MD[it_startT_MD] <- res[i,]$startT
-          it_startT_MD <- it_startT_MD +1
-        }
+        return(NULL)
       }
-    }else{ ### Non MD
-      if(i != 1){
-        if (res[i-1,]$outData < borne) ## La fenêtre précédente est MD
-        {
-          endT_MD[it_endT_MD] <- res[i,]$startT
-          it_endT_MD <- it_endT_MD + 1
-        }
-      }
-      
     }
-  }
-  
-  if (i == length(res$startT) &&  it_endT_MD != it_startT_MD)
-  {
-    endT_MD[it_endT_MD] <- res[i,]$endT
-    it_endT_MD <- it_endT_MD + 1
-  }
-  
-  missingData_date <- data.frame(startT_MD, endT_MD)
-  
-  # Save graph with start and end date for missing data
-  if(length(missingData_date[,1]) > 0 ) 
-  {
-    missingData <- cbind(nomfichier, missingData_date)
-    graph_data <- graphviewreal(df, NN=200000,titre = paste0(nomfichier,": Detection of missing data") ) + geom_vline(data= missingData_date ,aes(xintercept = startT_MD),linetype = "dashed", colour = "skyblue") + geom_vline(data= missingData_date ,aes(xintercept = endT_MD),linetype = "dashed", colour = "blue")
-    ggsave(plot = graph_data,filename =paste0(rept_save,nomfichier,"_missingdata.jpg"), dpi = 300,device = "jpg" )
   }else{
-    missingData <- data.frame(matrix(NA, nrow=0, ncol=3))
-    colnames(missingData) <- c("namefile", "startT_MD", "endT_MD")
+    return(NULL)
   }
-  
-  return(missingData)
 }
+

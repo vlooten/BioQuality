@@ -10,12 +10,10 @@
 
 df_final <- data.frame(matrix(NA, nrow=0, ncol=3))
 colnames(df_final) <- c("namefile", "startT_MD", "endT_MD")
-kk <- ""
-for(kk in listecalc)
-{
-    df <- loaddata(kk)
-    result <- detect_missing(df, 1, kk, rept_save = paste0(rept2,"missingdata/graph_md/"))
-    df_final <- rbind(df_final, result)
+for(kk in 1:length(listecalc)){
+  kk <- 1
+  result <- detect_missing(df = loaddata(listecalc[kk]), listecalc[kk])
+  df_final <- rbind(df_final, result)
 }
 
 write.table(df_final, file = paste0(rept2, "missingdata/missingdata_list.csv"), append = FALSE, quote = FALSE, sep = ";",

@@ -2,7 +2,7 @@
 # Load packages  ####
 listepackages<-c("readr","ggplot2","lubridate","quantreg","dplyr","stringr",
                  "reshape2","readr","scales","lsa","gridExtra","changepoint",
-                 "knitr","DT","rmarkdown")
+                 "knitr","DT","rmarkdown","segmented")
 for (pack in listepackages) {
   if (!is.element(pack, installed.packages()[,1])){
     install.packages(pack, dep = TRUE)
@@ -14,13 +14,19 @@ rm(pack)
 
 # Create subdirectories ####
 rept2 <- paste0(getwd(),"/") 
-rept <- paste0(getwd(),"/Data/") # Directory of data
 
+if(!dir.exists(paste0(rept2,"Data/"))){
+  dir.create(paste0(rept2,"Data/"),showWarnings = F)
+}
+rept <- paste0(getwd(),"/Data/") # Directory of data
 if(!dir.exists(paste0(rept2,"Graphs/"))){
   dir.create(paste0(rept2,"Graphs/"),showWarnings = F)
 }
 if(!dir.exists(paste0(rept2,"MovingQuantiles/"))){
   dir.create(paste0(rept2,"MovingQuantiles/"),showWarnings = F)
+}
+if(!dir.exists(paste0(rept2,"MovingCount/"))){
+  dir.create(paste0(rept2,"MovingCount/"),showWarnings = F)
 }
 if(!dir.exists(paste0(rept2,"discretisation/"))){
   dir.create(paste0(rept2,"discretisation/"),showWarnings = F)
@@ -94,7 +100,7 @@ loaddata <- function(concept, opt="new", dirpath="./data/"){
 
 graphviewreal <- function(dtt, titre="",NN=40000, optlim=F, bornes=c(0,10)){
   gg = ggplot(dplyr::sample_n(dtt,min(NN,nrow(dtt))), aes(x=as.Date(date2), y=value),environment=environment()) + 
-    theme_bw() + ggtitle(titre) + geom_point(aes(alpha=0.1)) +
+    theme_bw() + ggtitle(titre) + geom_point(alpha=0.05) +
     theme(axis.text.x = element_text(colour="grey20",size=12,angle=90,hjust=.5,vjust=.5,face="plain"),
           axis.text.y = element_text(colour="grey20",size=12,angle=0,hjust=1,vjust=.5,face="plain"),  
           axis.title.x = element_blank(),

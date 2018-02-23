@@ -1,0 +1,113 @@
+---
+title: "Data profile `r params$exam ` "
+author: "Inserm1138"
+date: "`r format(Sys.time(), '%d %B %Y') `"
+output: html_document
+params:
+    exam: exam
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+source('./init.R')
+name_exam <- params$exam
+# name_exam <- "BIO:20180213114053"
+# name_exam <- listecalc[1]
+# name_exam <- "BIO:1388"
+# name_exam <- "BIO:1145"
+# name_exam <- "BIO:1024"
+# name_exam <- "BIO:1052"
+# name_exam <- "BIO:1000"
+# name_exam <- "BIO:1195"
+# name_exam <- "BIO:1007" (Trou anionique)
+# name_exam <- "BIO:1007"
+#name_exam <- "BIO:1975"
+```
+
+
+```{r setupglobal, include=FALSE, cache=FALSE}
+Listcount <- read.csv2(paste0(rept,"Count.csv"), stringsAsFactors = FALSE)
+source(paste0(rept2,'loadresults.R'))
+```
+
+```{r loaddata}
+title_exam <- paste0(name_exam," / ",Listcount$NAME_CHAR[which(Listcount$CONCEPT_CD==name_exam)] )
+basebio1 <- loaddata(name_exam)
+basebio1 <- basebio1[which(!is.na(basebio1$value)),]
+idx <- findInterval(basebio1$value,quantile(basebio1$value, probs = c(0.01,0.99)),rightmost.closed = T) %in% 1
+result_exam <- result[which(result$CONCEPT_CD==name_exam),]
+# Generate graph of data
+exam_breakpoints <- result_breakpoints[which(result_breakpoints$exam==name_exam),]
+exam_discretization <- discretization_times[which(discretization_times$exam==name_exam),]
+dates_bp <- tryCatch(as.numeric(unlist(strsplit(exam_breakpoints$Dates,split = "@"))), error = function(e) NA)
+dates_discret <- ifelse(nrow(exam_discretization)==0,NA,exam_discretization$startT)
+exam_missingdata <- missingdata_list[which(gsub(".",":", fixed=T, missingdata_list$namefile)==name_exam),]
+result_exam$missingdata <- ifelse(length(exam_missingdata$startT_MD)>0,T,F)
+```
+
+# Presentation of data : `r title_exam `
+
+* There are `r length(basebio1$value)` values between  `r as.Date(min(basebio1$date))` and `r as.Date(max(basebio1$date))`. 
+* Median and IQR are `r sprintf("%s [%s - %s]",quantile(basebio1$value, probs = 0.5),quantile(basebio1$value, probs = 0.25),quantile(basebio1$value, probs = 0.75))`.
+* The minimum value is `r min(basebio1$value)`.
+* The maximum value is `r max(basebio1$value)`.
+
+## Data density
+
+```{r graphdensity}
+ggplot(basebio1[idx,], aes(value, fill ="red")) +
+  geom_density() + theme_bw() + ggtitle(title_exam) + guides(fill=FALSE)
+```
+
+# Analyse of time serie
+
+## Detections
+
+Results of detection methods:
+
++ Breakpoint: `r ifelse(result_exam$breakpoint==TRUE,"Yes","Undetectable")`
++ Trends: `r ifelse(result_exam$trends==TRUE & result_exam$PropVar>0,"Yes","Undetectable")`
++ Change of distribution: `r ifelse(result_exam$discretization==TRUE,"Yes","Undetectable")`
++ Missing data: `r ifelse(result_exam$missingdata==TRUE,"Yes","Undetectable")`
+
+## Data over time
+
+Breakpoint (blue dashed line); Change of distribution (red dashed line); Missing data (pink dashed line)
+
+
+```{r graphtime}
+creatfig(x=name_exam,y=name_exam)
+```
+
+## Detections analysis
+
+Results of detected changes:
+
++ Breakpoint: `r ifelse(result_exam$breakpoint==TRUE,paste0(as.Date(dates_bp),collapse = " / "),"--")`
++ Change of distribution: `r ifelse(result_exam$discretization==TRUE, paste0(as.Date(exam_discretization$startT),collapse = " / ") ,"--")`
++ Missing data: `r ifelse(result_exam$missingdata==TRUE, paste0(as.Date(unique(exam_missingdata$startT_MD)),collapse="/"),"--" )`
++ Trends: `r ifelse(result_exam$trends==FALSE | result_exam$PropVar==0,"--", ifelse(result_exam$trends==TRUE & result_exam$PropVar>5, "High", ifelse(result_exam$trends==TRUE & result_exam$PropVar<=5,"Low","--" )) )`
+
+### Number of observations
+
+```{r graphtime2}
+ggplot(basebio1[idx,], aes(x=as.Date(date), fill ="red")) +
+  geom_histogram(binwidth = 60) + theme_bw() + ggtitle(title_exam) + guides(fill=FALSE) +  xlab("Time")+ ylab("Number of exams")
+```
+
+### Global detections
+
+```{r graphtimeglobal}
+#
+numevents2 <- numevents
+if(!is.na(dates_bp)){
+  numevents2 <- numevents2 + geom_vline(data=data.frame(bp=dates_bp),aes(xintercept = bp),linetype = "dashed", colour = "blue")
+}
+if(!is.na(dates_discret)){
+  numevents2 <- numevents2 + geom_vline(data=data.frame(discret=dates_discret),aes(xintercept = discret),linetype = "dashed", colour = "#fb739c")
+}
+if(nrow(exam_missingdata)>0){
+  numevents2 <- numevents2 + geom_vline(data=data.frame(discret=unique(exam_missingdata$startT_MD)),aes(xintercept = discret),linetype = "dashed", colour = "#ff33ec")
+}
+numevents2
+```

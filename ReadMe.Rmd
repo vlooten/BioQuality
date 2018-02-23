@@ -1,0 +1,64 @@
+---
+title: "Biology quality and CDW"
+author: "INSERM1138eq22"
+date: "31 août 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE, message=FALSE)
+```
+
+```{r cars, echo=F, results='hide'}
+library("DT")
+```
+
+The objective of these scripts is to provide diagnostic tools of the quality of biological data in a clinical data warehouse.
+These scripts are based on: (REF ARTICLE).
+
+# Data input
+
+Examples files have to be put in a directory called 'Example' in the working directory.
+
+## Example of the list of exam
+```{r listeexample, echo=F,warning=FALSE, message=FALSE}
+source('./init.R')
+list_example <- read.csv2(paste0(rept2,"./Example/Count.csv"), stringsAsFactors = FALSE)
+datatable(list_example[,1:4], class = 'cell-border stripe')
+```
+
+## Example of a dataset of one exam
+```{r dataexample, echo=F,warning=FALSE}
+data_example <- read.csv2(paste0(rept2,"./Example/BIO.20170821101046.csv"), stringsAsFactors = FALSE)
+datatable(data_example, class = 'cell-border stripe')
+```
+
+# Scripts
+
+## Structure
+
+There are 13 R files :
+
++ init.R: load packages, create directories
++ datasimu.R: simulation of data to test the programs
++ datareal.R: extract files from i2b2 clinical data warehouse
++ movingquantiles.R
++ fun_movingquantiles.R
++ missingdata.R
++ fun_missingdata.R
++ discretization.R
++ fun_discretization.R
++ breakpoints.R
++ fun_breakpoints.R
++ trends.R
++ fun_trends.R
+
+Plus one directory called 'Example'. It contains files in the right format.
+  
+## How to use scripts without real data ?
+
+You need to adapt the script dayareal.R. Ouputs have to be in the same format than files in the directory Example\.  
+  
+## How to use scripts with real data ?

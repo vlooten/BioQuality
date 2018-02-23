@@ -167,6 +167,7 @@ describetrends <- function(inputData, opt1=T, bp=NULL, setwindowSize=120){
   if(bp[1]>0){
     followcut <- c(0,bp$place,Inf)
     pp <- 1
+    nbregression <- 1
     for(kk in 1:(length(followcut)-1)){
       newind <- pp*nbregression
       res[c(1+newind),"bp"] <- pp

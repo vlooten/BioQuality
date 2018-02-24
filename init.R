@@ -1,6 +1,6 @@
 
 # Load packages  ####
-listepackages<-c("readr","ggplot2","lubridate","quantreg","dplyr","stringr",
+listepackages<-c("readr","ggplot2","lubridate","quantreg","dplyr","tidyr","stringr",
                  "reshape2","readr","scales","lsa","gridExtra","changepoint",
                  "knitr","DT","rmarkdown","segmented")
 for (pack in listepackages) {

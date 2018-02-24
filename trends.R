@@ -12,7 +12,7 @@ for(kk in listecalc){
   if (!file.exists(paste0(rept,"trendsresult/", nomfichier,"_trends.csv"))){
     dataBio <- loaddata(nomfichier)
     
-    list_input_trends <- list(nbp=scanbreakbio[[which(scanbreakbio$exam==kk),c("NuOfBreak")]],place=strsplit(scanbreakbio[[which(scanbreakbio$exam==kk),c("Dates")]],split = "@")[[1]])
+    list_input_trends <- list(nbp=scanbreakbio[[which(scanbreakbio$exam==kk),c("NuOfBreak")]],place=strsplit(as.character(scanbreakbio[[which(scanbreakbio$exam==kk),c("Dates")]]),split = "@")[[1]])
     if(is.na(list_input_trends$nbp)) {list_input_trends$nbp <- 0 }
     if(is.na(list_input_trends$place)) {list_input_trends$place <- 0 }
     

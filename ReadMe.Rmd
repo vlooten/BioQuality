@@ -1,22 +1,14 @@
 ---
 title: "Biology quality and CDW"
-author: "INSERM1138eq22"
+author: "Vincent Looten, Burgun's Lab"
 date: "31 août 2017"
 output:
   html_document: default
   pdf_document: default
 ---
-  
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE, message=FALSE)
-```
 
-```{r cars, echo=F, results='hide'}
-library("DT")
-```
-
-The objective of these scripts is to provide diagnostic tools of the quality of biological data in a clinical data warehouse.
-These scripts are based on: (REF ARTICLE).
+The objective of these scripts is to provide diagnostic tools of the temporal quality of biological data in a clinical data warehouse.
+These scripts are based on: ("WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE" currently under submission).
 
 # Data input
 
@@ -42,6 +34,7 @@ datatable(data_example, class = 'cell-border stripe')
 There are 13 R files :
 
 + init.R: load packages, create directories
++ main.R: master script
 + datasimu.R: simulation of data to test the programs
 + datareal.R: extract files from i2b2 clinical data warehouse
 + movingquantiles.R

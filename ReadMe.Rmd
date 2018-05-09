@@ -1,6 +1,6 @@
 ---
 title: "Biology quality and CDW"
-author: "Vincent Looten, Burgun's Lab"
+author: "Vincent Looten from the Anita Burgun's Lab"
 date: "31 août 2017"
 output:
   html_document: default
@@ -8,24 +8,17 @@ output:
 ---
 
 The objective of these scripts is to provide diagnostic tools of the temporal quality of biological data in a clinical data warehouse.
-These scripts are based on: ("WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE" currently under submission).
+These scripts are based on: "WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE" (currently under submission).
 
 # Data input
 
-Examples files have to be put in a directory called 'Example' in the working directory.
+Two examples files have to be put in a directory called 'Example' in the working directory:
++ Count.csv
++ BIO.20170821101046.csv
 
-## Example of the list of exam
-```{r listeexample, echo=F,warning=FALSE, message=FALSE}
-source('./init.R')
-list_example <- read.csv2(paste0(rept2,"./Example/Count.csv"), stringsAsFactors = FALSE)
-datatable(list_example[,1:4], class = 'cell-border stripe')
-```
-
-## Example of a dataset of one exam
-```{r dataexample, echo=F,warning=FALSE}
-data_example <- read.csv2(paste0(rept2,"./Example/BIO.20170821101046.csv"), stringsAsFactors = FALSE)
-datatable(data_example, class = 'cell-border stripe')
-```
+These files helps you to adapt your SQL query for the proposed data profiling algorithm.
+The file 'Count.csv' includes the example of the list of exams as an input.
+The file 'BIO.20170821101046.csv' includes the require input format for lab tests data.
 
 # Scripts
 

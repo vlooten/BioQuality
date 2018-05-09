@@ -10,7 +10,7 @@ output:
 The objective of these scripts is to provide diagnostic tools of the temporal quality of biological data in a clinical data warehouse.
 These scripts are based on: "WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE" (currently under submission).
 
-# Data input
+# The data input format
 
 Two examples files have to be put in a directory called 'Example' in the working directory:
 + Count.csv
@@ -20,31 +20,30 @@ These files helps you to adapt your SQL query for the proposed data profiling al
 The file 'Count.csv' includes the example of the list of exams as an input.
 The file 'BIO.20170821101046.csv' includes the require input format for lab tests data.
 
-# Scripts
+# How to use scripts without real data ?
 
-## Structure
+To run for the first time the data profiling algorithm, we recommend to try it on simulated data:
++ Put all the R files in a R project directory.
++ Launch the master script called 'main.R'
+
+Report and derived files will be create with the simulated data. The simulated data are generated with the script 'datasimu.R'. This script generates the differents patterns described in the article.
+
+# Landscape of R files
 
 There are 13 R files :
 
-+ init.R: load packages, create directories
-+ main.R: master script
++ init.R: install and load packages, create directories, source fun_ R files
++ main.R: master script call all script
 + datasimu.R: simulation of data to test the programs
 + datareal.R: extract files from i2b2 clinical data warehouse
-+ movingquantiles.R
-+ fun_movingquantiles.R
++ movingquantiles.R: compute the moving quantiles
++ fun_movingquantiles.R: auxiliary file associated to the movingquantiles.R file
 + missingdata.R
-+ fun_missingdata.R
++ fun_missingdata.R: auxiliary file associated to the missingdata.R file
 + discretization.R
-+ fun_discretization.R
++ fun_discretization.R: auxiliary file associated to the discretization.R file
 + breakpoints.R
-+ fun_breakpoints.R
++ fun_breakpoints.R: auxiliary file associated to the breakpoints.R file
 + trends.R
-+ fun_trends.R
-
-Plus one directory called 'Example'. It contains files in the right format.
++ fun_trends.R: auxiliary file associated to the trends.R file
   
-## How to use scripts without real data ?
-
-You need to adapt the script dayareal.R. Ouputs have to be in the same format than files in the directory Example\.  
-  
-## How to use scripts with real data ?

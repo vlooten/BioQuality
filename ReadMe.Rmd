@@ -28,22 +28,27 @@ To run for the first time the data profiling algorithm, we recommend to try it o
 
 Report and derived files will be create with the simulated data. The simulated data are generated with the script 'datasimu.R'. This script generates the differents patterns described in the article.
 
+# How to use scripts with real data ?
+
+After lauching programs with simulated data. You will show the data directory where to put your real data. You have also to generate Count.csv which contains the index of lab tests.
+If you have an I2B2 data warehouse you can also adapt the datareal.R file.
+
 # Landscape of R files
 
 There are 13 R files :
 
 + init.R: install and load packages, create directories, source fun_ R files
 + main.R: master script call all script
-+ datasimu.R: simulation of data to test the programs
-+ datareal.R: extract files from i2b2 clinical data warehouse
++ datasimu.R: simulation of data to test the programs. This script generates the differents patterns described in the article.
++ datareal.R: extract files from i2b2 clinical data warehouse in the right format
 + movingquantiles.R: compute the moving quantiles
 + fun_movingquantiles.R: auxiliary file associated to the movingquantiles.R file
-+ missingdata.R
-+ fun_missingdata.R: auxiliary file associated to the missingdata.R file
-+ discretization.R
++ missingdata.R: detect missing data (not described in the article, previous version)
++ fun_missingdata.R: auxiliary file associated to the missingdata.R file (not described in the article, previous version)
++ discretization.R: detect discritization
 + fun_discretization.R: auxiliary file associated to the discretization.R file
-+ breakpoints.R
++ breakpoints.R: detect breakpoints
 + fun_breakpoints.R: auxiliary file associated to the breakpoints.R file
-+ trends.R
++ trends.R: performe regressions
 + fun_trends.R: auxiliary file associated to the trends.R file
   

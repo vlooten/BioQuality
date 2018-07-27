@@ -1,29 +1,29 @@
 
 # Step3b : Discretization ####
 
-# Liste des fonctions :
-# substrRight : Fonction pour récupérer les n digits finaux 
-# get_dec : Fonction pour définir les classes de nb_digit
-# Avec poids : [ Ce qui a été utilisé dans l'article]
+# List of functions :
+# substrRight : Function to retrieve the final n digits
+# get_dec : Function to define nb_digit classes
 # count_last_discretisation_weight
-# MovingCountLast_weight[nécessite count_last_discretisation_weight]
+# MovingCountLast_weight
 
 
-# FONCTION SUBSTRRIGHT ####
-### Fonction pour récupérer les n digits finaux 
-### x : vector de nombres , n : n digit finaux à récupérer (par défaut, 1)
-### Exemple : 105 -> 5 ; 10 -> 0  ; 1 -> 1 ; 10.5 -> 5
+# FUNCTION SUBSTRRIGHT ####
+### Function to retrieve the final n digits 
+### x : vector of numbers , n : n the final n digits to retrieve (1 by default)
+### Example : 105 -> 5 ; 10 -> 0  ; 1 -> 1 ; 10.5 -> 5
+
 substrRight <- function (x=NA,n=1)
 {
   substr(x, nchar(x)-n+1, nchar(x))
   
 }
 
-# FONCTION GET_DEC ####
-#### Fonction pour définir les classes de nb_digit
-#### ATTENTION, on donne que des NOMBRES au sens de R (donc pas de ',' seulement des '.')
-#### num : nombre ou vecteur de nombres
-#### Exemple : 10 -> int_2 ; 100->int_3 ; 100.5 -> 1 ; 100.05 -> 2
+# FUNCTION GET_DEC ####
+#### unction to define nb_digit classes
+#### num : number or vector of numbers
+#### Example : 10 -> int_2 ; 100->int_3 ; 100.5 -> 1 ; 100.05 -> 2
+
 get_dec<- function (num)
 {
   if(grepl("\\.", num, perl=FALSE, fixed= FALSE))
@@ -35,30 +35,30 @@ get_dec<- function (num)
   }
 }
 
-# FONCTION COUNT_LAST_DISCRETISATION_WEIGHT ####
-### input : data (juste les valeurs), name_date (nom du concept étudié), borne_min_missing_data (entier : nombre à partir duquel on considère qu'il y a suffisament de données pour appliquer l'algo)
+# FUNCTION COUNT_LAST_DISCRETISATION_WEIGHT ####
+### input : data (only values), name_date (concept name), borne_min_missing_data (integer; number at which there is considered to be sufficient data to apply the algorithm)
 ### output : data frame ### col : name_data, c_nb_digit_final, c_last_digit_final, c_ratio_final, c_disretisation_test_final
 count_last_discretisation_weight <-  function(data = NA, name_data = "BIO" ,borne_min_missing_data = 5000, borne_ratio=0)
 {    
   data <- gsub(pattern = ",",replacement = ".",x = data ,perl = F,fixed=T)
   clist <- data
   df_basebio_dec_last <- data.frame(matrix(NA, nrow= length(clist), ncol=2))
-  ####### Traitement
+  ####### processing
   df_basebio_dec_last[,2] <- sapply(clist , substrRight) ## Last digit
   df_basebio_dec_last[,1] <- sapply(clist, get_dec)  ## nb digit
   
-  ####### Table de comptage de freq pour nb_digit
+  ####### Frequency counting table for nb_digit
   table2 <- as.data.frame(table(df_basebio_dec_last[,1]))
-  ####### Data frame de nb_digit : nb_digit , nb_val avec ce nombre de digit, ratio dans le graphe
+  ####### Data frame of nb_digit : nb_digit , nb_val, ratio
   df_table_ratio <- data.frame(matrix(NA, nrow = length(table2[["Freq"]]), ncol=3))
   colnames(df_table_ratio) <- c("nb_digit", "nb_val", "ratio")
   df_table_ratio[,1] <- table2[,1]
   df_table_ratio[,2] <- table2[,2]
   df_table_ratio[,3] <- 100*table2[,2]/length(data)
   
-  ####### Table de comptage pour le couple (nb_digit , last_digit)
+  ####### Frequency counting table for the pair (nb_digit , last_digit)
   tableclast <- as.data.frame(table(df_basebio_dec_last))
-  ####### Data frame de (nb_digit,last_digit) :
+  ####### Data frame or pairs (nb_digit,last_digit) :
   df_table_ratio_last <- data.frame(matrix(NA, nrow = length(tableclast[["Freq"]]), ncol=5))
   colnames(df_table_ratio_last) <-  c("nb_digit", "last_digit", "freq_last_digit","freq_nb_digit","ratio" )
   df_table_ratio_last[,1] <- tableclast[,1]

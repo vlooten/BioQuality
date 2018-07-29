@@ -15,9 +15,9 @@ describetrends <- function(inputData, opt1=T, bp=NULL, setwindowSize=120){
     if(typeof(x)=="list"){
       if(opt2){
         out <- tryCatch(c(coefficients(x)[2,1],coefficients(x)[2,2],coefficients(x)[2,3],as.vector(summary(x)$coefficients[2,2])
-                          ,as.vector(dchisq(summary(x)$coefficients[2,3],1)),coefficients(x)[1,1] ), error = function(e) c(coefficients(x)[2,1],coefficients(x)[2,2],coefficients(x)[2,3],NA,NA,coefficients(x)[1,1]  ) )
+                          ,as.vector(summary(x)$coefficients[2,4]),coefficients(x)[1,1] ), error = function(e) c(coefficients(x)[2,1],coefficients(x)[2,2],coefficients(x)[2,3],NA,NA,coefficients(x)[1,1]  ) )
       }else{
-        out <- tryCatch(c(as.vector(coefficients(x)[2]),confint(x)[2,1],confint(x)[2,2],summary(x)$coefficients[2,2],dchisq(summary(x)$coefficients[2,3],1),coefficients(x)[1]), error = function(e) rep(NA,6))
+        out <- tryCatch(c(as.vector(coefficients(x)[2]),confint(x)[2,1],confint(x)[2,2],summary(x)$coefficients[2,2],as.vector(summary(x)$coefficients[2,4]),coefficients(x)[1]), error = function(e) rep(NA,6))
       }
     }else{
       out <- rep(NA,6)

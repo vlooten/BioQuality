@@ -74,19 +74,19 @@ count_last_discretisation_weight <-  function(data = NA, name_data = "BIO" ,born
   
   
   nb_digit_maj <-df_table_ratio[df_table_ratio$nb_val>borne_min_missing_data,]$nb_digit
-  # nb_digit_maj : nombre de classes
+  # nb_digit_maj : number of classes
   
-  ##### Initialisation : Ces valeurs seront utilisées si les données (ou portion de données) sont perçues comme non discrétisées
+  ##### Initialization: These values will be used if the data are perceived as unrounded
   c_nb_digit_final <- "NA"
   c_last_digit_final <- "NA"
   c_ratio_final <- "NA"
   c_disretisation_test_final <- FALSE   
-  ##### 
   
-  if (length(nb_digit_maj) >0 ) { # CONDITIONS POUR EVITER LES NA
-    if (!any(is.na(nb_digit_maj))) # DEBUG
+  if (length(nb_digit_maj) >0 ) { # debug to exclude NA situation
+    if (!any(is.na(nb_digit_maj))) # debug to exclude NA situation
     {
-      #### Selection des classes à sortir (borne_ratio indique à partir de quel ratio une classe indique une discrétisation (à 0, on choisit de sortir toutes les données))
+      #### Selection of output classes 
+      # borne_ratio is the ratio from which a class is flagged as discretized (for 0, we choose to output all data)
       new_row_base <- subset(x=subset(x = df_table_ratio_last, nb_digit %in% nb_digit_maj), ratio>=borne_ratio)
       if (length(new_row_base[,1])>0)
       {
@@ -97,15 +97,13 @@ count_last_discretisation_weight <-  function(data = NA, name_data = "BIO" ,born
       }
     }
   }  
-  ### Assemblage de l'output
+  ### Output object building
   c_final <- paste0( c(name_data, c_nb_digit_final, c_last_digit_final, c_ratio_final, c_disretisation_test_final), collapse = ";")
-  # name_data, NOM DE L'EXAM
-  # c_nb_digit_final : CLASSE
-  # c_last_digit_final : DERNIER DIGIT
-  # c_ratio_final : RATIO
-  # c_disretisation_test_final : OUI/NON
-  # Detect discret si discretization en considérant le parametre borne_ratio
-  # difference avec la fonction sans le poids : calcul de df_table_ratio_last
+  # name_data: name of the concept
+  # c_nb_digit_final : class
+  # c_last_digit_final : last digit
+  # c_ratio_final : ratio
+  # c_disretisation_test_final : yes/no
   return(c_final)  
 }
 
@@ -114,7 +112,7 @@ MovingCountLast_weight <- function(inputData=NA, windowSize = 60, borne_min_exam
 {
   
   if (is.null(inputData)) {
-    cat("WARNING: Please input a valid inputData\n")
+    cat("WARNING: Please input a valid input data\n")
     return(NULL)
   }
   if (windowSize <= 1) {
@@ -130,7 +128,7 @@ MovingCountLast_weight <- function(inputData=NA, windowSize = 60, borne_min_exam
   startT <- vector()
   endT <- vector()
   j <- 1
-  ## Fenêtre sautante !
+  ## Non-Overlapping moving windows
   for (i in seq(min(inputData$date),max(inputData$date),by = windowSize)) {
     
     startTmp <- i
@@ -139,37 +137,44 @@ MovingCountLast_weight <- function(inputData=NA, windowSize = 60, borne_min_exam
     endT[j] <- endTmp
     indice <- which(inputData$date>=startTmp & inputData$date<=endTmp)
     
-    ## Calcul (application de fonction)
-    if(length(indice)<=borne_min_exam){ ### si on veut qu'une fenêtre soit ignorée car elle n'a pas assez de données
+    ## Counting
+    if(length(indice)<=borne_min_exam){ ### Not enough data condition
       outData[j] <- NA
     }else{
-      ## Application de la fonction
       outData[j] <- count_last_discretisation_weight(data=inputData$value[indice], name_data = name_data, borne_min_missing_data = 50 , borne_ratio = borne_ratio)
     }
     j <- j+1
   }
   
-  ### Fin fenêtre
-  ### Assemblage de l'output
+  ### End of the moving windows
+  
+  ### Output building
   out <- data.frame(startT, endT, outData)
   return(out)
 }
 
-# Fonction finale de detection des changements ####
+# Detection change function ####
 
-discretization_change <- function(dt_name, target_cosine=50 ,graph_output=paste0(rept2,"discretisation/graph_discret_w/"),window_size = 60){
+discretization_change <- function(dt_name, target_cosine=50 ,
+                                  graph_output=paste0(rept2,"discretisation/graph_discret_w/"),window_size = 60){
+  # Inputs :
+  # dt_name:  concept name (we import from file)
+  # target_cocine : cosine threshold
   
-  nb_concept_ac_chgmt <- 0 # itérateur
-  nb_rows_timeline_chgmt <- 1 # itérateur
+  # iterator
+  nb_concept_ac_chgmt <- 0
+  nb_rows_timeline_chgmt <- 1
+  # Import data
   nomfichier <- make.names(dt_name)
   basebio1 <- loaddata(dt_name)
+  # Change data format for french convention (replace , by . as decimal separator)
   basebio1["value"] <- gsub(pattern = ",",replacement = ".",x = basebio1[["value"]] ,perl = F,fixed=T)
   basebio1["value"] <- as.numeric(basebio1[["value"]])
   
-  # Compute XXXXXXXXXXXXXXXXXX 
+  # Compute the counting function
   d <- MovingCountLast_weight(inputData = basebio1, windowSize = window_size, borne_ratio=0)
   
-  # Traitment of output
+  # Get results in readable format
   test <- strsplit(as.character(d[["outData"]]),';', fixed = TRUE)
   outty <- data.frame(matrix(NA, nrow = length(test), ncol = 5))
   
@@ -179,22 +184,27 @@ discretization_change <- function(dt_name, target_cosine=50 ,graph_output=paste0
     outty[i,] <- ctest[[1]]
   }
   
-  ####### Vecteurs d'informations sur les changements de discrétisation au cours du temps sur le BIO concerné
+  # Output vectors ####
+  
+  # Time vectors
   list_startT <- vector()
+  # Cosine vectors
   list_cosine <- vector()
-  ################################################### POUR CHAQUE PAIRES DE FENETRES i ET i+1
+  
+  # We compute cosine for each pair of windows (window ii, window ii+1)
   if (length(d[,1])-1 > 0){
     for (ii in 1:(length(d[,1])-1))
     {
-      ##################### Extraction des informations relatives à deux fenêtres consécutives
-      # window_i  : nb_digit, last_digit, ratio
+      # Extracting information from two consecutive windows
+      
+      # window ii  : nb_digit, last_digit, ratio
       window_1_temp <- strsplit(outty[[ii,2]], "@", fixed = TRUE)
       window_1 <- data.frame(matrix(NA, nrow= length(window_1_temp[[1]]), ncol = 3)  )
       colnames(window_1) <- c("nb_digit", "last_digit", "ratio")
       window_1[,1] <- window_1_temp[[1]]
       window_1[,2] <- strsplit(outty[[ii,3]], "@", fixed = TRUE)
       window_1[,3] <- strsplit(outty[[ii,4]], "@", fixed = TRUE)
-      
+      # window ii+1  : nb_digit, last_digit, ratio
       window_2 <- strsplit(outty[[ii+1,2]], "@", fixed = TRUE)
       window_2_temp <- strsplit(outty[[ii+1,2]], "@", fixed = TRUE)
       window_2 <- data.frame(matrix(NA, nrow= length(window_2_temp[[1]]), ncol = 3)  )
@@ -203,20 +213,20 @@ discretization_change <- function(dt_name, target_cosine=50 ,graph_output=paste0
       window_2[,2] <- strsplit(outty[[ii+1,3]], "@", fixed = TRUE)
       window_2[,3] <- strsplit(outty[[ii+1,4]], "@", fixed = TRUE)
       
+      # Merging window_ii and window_ii+1 objects
       w1 <- tidyr::unite(window_1, classe ,nb_digit, last_digit, sep=";")
       w2 <- tidyr::unite(window_2, classe ,nb_digit, last_digit, sep=";")
-      
       w <- dplyr::full_join(w1,w2, by="classe")
+      # NA debug conditions
       w[is.na(w)] <- 0
-      
-      if(length(w[w$ratio.x=="NA",]$ratio.x) !=0)
-      {w[w$ratio.x=="NA",]$ratio.x <- 0}
-      
-      if(length(w[w$ratio.y=="NA",]$ratio.y) !=0)
-      {w[w$ratio.y=="NA",]$ratio.y <- 0}
-      
-      
+      if(length(w[w$ratio.x=="NA",]$ratio.x) !=0){
+        w[w$ratio.x=="NA",]$ratio.x <- 0
+      }
+      if(length(w[w$ratio.y=="NA",]$ratio.y) !=0){
+        w[w$ratio.y=="NA",]$ratio.y <- 0
+      }
       list_startT[ii] <- d[ii,2]
+      # Cosine computation
       list_cosine[ii] <- cosine(as.numeric(w$ratio.x), as.numeric(w$ratio.y))
       if(list_cosine[ii] =="NaN")
       {
@@ -224,7 +234,8 @@ discretization_change <- function(dt_name, target_cosine=50 ,graph_output=paste0
       }
     }
     
-    ##### Création du data frame final (on utilise des pourcentages pour les cosines)
+    # Final output dataframe ####
+    # cosine are expressed as a percentage
     data_final_discre_base_date <- data.frame(list_startT, list_cosine*100)
     data_final_discre <- data.frame(as.Date(list_startT, origin="1970-01-01"), list_cosine*100)
     colnames(data_final_discre) <- c("startT", "cosine")
@@ -233,24 +244,19 @@ discretization_change <- function(dt_name, target_cosine=50 ,graph_output=paste0
     # Change detect if target_cosine
     dates_discre <- data_final_discre_base_date[data_final_discre_base_date$cosine <= target_cosine,]
     
-    ####### TODO : petite fonction pour fusionner les fenêtres adjacentes discrétisées (prendre la plus vieille (donc la première))
-    # SUPER IMPORTANT : quand plusieurs changements successifs ne compter qu'un seul changement
-    
+    # When there are several successive changes, there is only one change
+    # Only works for one time window (duration equal to SetWindows)
     dates <- dates_discre["startT"]
-    ####### Ne fonctionne que pour UNE fenêtre de distance (120 jours, ça fait déjà beaucoup)
-    if (length(dates_discre[,1]) > 1)
-    {
-      for (xx in 1:(length(dates_discre[,1])-1) )
-      {
-        if (dates[xx+1,]==(dates[xx,]+windowSize  ))
-        {
+    if (length(dates_discre[,1]) > 1){
+      for (xx in 1:(length(dates_discre[,1])-1) ){
+        if (dates[xx+1,]==(dates[xx,]+windowSize  )){
           dates_discre <- dates_discre[dates[xx+1,]!=dates_discre$startT,]
         }
       }
     }
-    ### If Discretization detected
+    
+    # We generate a graphic output if we detect a discretization
     if(length(dates_discre[,1])>0){
-      # Graphic output
       dates_discre <- as.data.frame(dates_discre)
       mini_date <- as.Date(min(basebio1$date,na.rm=T), origin="1970-01-01")
       maxi_date <- as.Date(max(basebio1$date,na.rm=T), origin="1970-01-01")

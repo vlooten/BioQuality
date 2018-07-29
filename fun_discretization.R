@@ -6,6 +6,9 @@
 # get_dec : Function to define nb_digit classes
 # count_last_discretisation_weight
 # MovingCountLast_weight
+# discretization_change : the detection change function (compute cosine between non-overlapping time windows)
+# discrietization_raw : a function for using outside the use case (in the context of simulation studies) ####
+
 
 
 # FUNCTION SUBSTRRIGHT ####
@@ -272,6 +275,104 @@ discretization_change <- function(dt_name, target_cosine=50 ,
       
     }
 
+  }else{
+    warning(paste0("Not enough data for discritization detection with the window size ",window_size))
+    return(list(discretization=FALSE))
+  }
+  
+}
+
+# discritization function for using outside the use case (in the context of simulation studies) ####
+
+discretization_raw <- function(data, target_cosine=50 ,graph_output=paste0(rept2,"./"),window_size = 60){
+  
+  d <- MovingCountLast_weight(inputData = data, windowSize = window_size, borne_ratio=0)
+  
+  test <- strsplit(as.character(d[["outData"]]),';', fixed = TRUE)
+  outty <- data.frame(matrix(NA, nrow = length(test), ncol = 5))
+  
+  for(i in 1:length(test))
+  {
+    ctest <- test[i]
+    outty[i,] <- ctest[[1]]
+  }
+  
+  list_startT <- vector()
+  list_cosine <- vector()
+  
+  if (length(d[,1])-1 > 0){
+    for (ii in 1:(length(d[,1])-1))
+    {
+      window_1_temp <- strsplit(outty[[ii,2]], "@", fixed = TRUE)
+      window_1 <- data.frame(matrix(NA, nrow= length(window_1_temp[[1]]), ncol = 3)  )
+      colnames(window_1) <- c("nb_digit", "last_digit", "ratio")
+      window_1[,1] <- window_1_temp[[1]]
+      window_1[,2] <- strsplit(outty[[ii,3]], "@", fixed = TRUE)
+      window_1[,3] <- strsplit(outty[[ii,4]], "@", fixed = TRUE)
+      
+      window_2 <- strsplit(outty[[ii+1,2]], "@", fixed = TRUE)
+      window_2_temp <- strsplit(outty[[ii+1,2]], "@", fixed = TRUE)
+      window_2 <- data.frame(matrix(NA, nrow= length(window_2_temp[[1]]), ncol = 3)  )
+      colnames(window_2) <- c("nb_digit", "last_digit", "ratio")
+      window_2[,1] <- window_2_temp[[1]]
+      window_2[,2] <- strsplit(outty[[ii+1,3]], "@", fixed = TRUE)
+      window_2[,3] <- strsplit(outty[[ii+1,4]], "@", fixed = TRUE)
+      
+      w1 <- tidyr::unite(window_1, classe ,nb_digit, last_digit, sep=";")
+      w2 <- tidyr::unite(window_2, classe ,nb_digit, last_digit, sep=";")
+      
+      w <- dplyr::full_join(w1,w2, by="classe")
+      w[is.na(w)] <- 0
+      
+      if(length(w[w$ratio.x=="NA",]$ratio.x) !=0)
+      {w[w$ratio.x=="NA",]$ratio.x <- 0}
+      
+      if(length(w[w$ratio.y=="NA",]$ratio.y) !=0)
+      {w[w$ratio.y=="NA",]$ratio.y <- 0}
+      
+      
+      list_startT[ii] <- d[ii,2]
+      list_cosine[ii] <- cosine(as.numeric(w$ratio.x), as.numeric(w$ratio.y))
+      if(list_cosine[ii] =="NaN")
+      {
+        list_cosine[ii] <- 1
+      }
+    }
+    
+    data_final_discre_base_date <- data.frame(list_startT, list_cosine*100)
+    data_final_discre <- data.frame(as.Date(list_startT, origin="1970-01-01"), list_cosine*100)
+    colnames(data_final_discre) <- c("startT", "cosine")
+    colnames(data_final_discre_base_date) <-  c("startT", "cosine")
+    
+    dates_discre <- data_final_discre_base_date[data_final_discre_base_date$cosine <= target_cosine,]
+    
+    dates <- dates_discre["startT"]
+    if (length(dates_discre[,1]) > 1)
+    {
+      for (xx in 1:(length(dates_discre[,1])-1) )
+      {
+        if (dates[xx+1,]==(dates[xx,]+windowSize  ))
+        {
+          dates_discre <- dates_discre[dates[xx+1,]!=dates_discre$startT,]
+        }
+      }
+    }
+    if(length(dates_discre[,1])>0){
+      dates_discre <- as.data.frame(dates_discre)
+      mini_date <- as.Date(min(basebio1$date,na.rm=T), origin="1970-01-01")
+      maxi_date <- as.Date(max(basebio1$date,na.rm=T), origin="1970-01-01")
+      graph_data_lines <- graphviewreal(basebio1, NN=200000,titre = " ") + xlim(mini_date,maxi_date) + geom_vline(data=as.data.frame(dates_discre),aes(xintercept = startT),linetype = "dashed", colour = "blue")
+      graph_line_consine <- ggplot(data_final_discre, aes(x = startT, y = cosine))  +  theme_bw() +  geom_line() + theme(axis.title.y = element_blank(), axis.title.x = element_blank()) + xlim(mini_date,maxi_date) + ylim(c(0,100))
+      graph_data <- graphviewreal(basebio1, NN=200000,titre = " ") + xlim(mini_date,maxi_date)
+      g <- arrangeGrob(graph_line_consine, graph_data_lines, nrow=2 , ncol=1) #generates g
+      ggsave(file=paste0(graph_output, nomfichier,".pdf"), g, dpi = 300) #saves g
+      
+      return(list(discretization=TRUE,timeline_chgmnt=dates_discre, datacosine=data_final_discre))
+    }else{
+      return(list(discretization=FALSE, datacosine=data_final_discre))
+      
+    }
+    
   }else{
     warning(paste0("Not enough data for discritization detection with the window size ",window_size))
     return(list(discretization=FALSE))

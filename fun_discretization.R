@@ -1,5 +1,5 @@
 
-# Step3b : Discretization ####
+# Discretization detection functions ####
 
 # List of functions :
 # substrRight : Function to retrieve the final n digits
@@ -248,11 +248,11 @@ discretization_change <- function(dt_name, target_cosine=50 ,
     dates_discre <- data_final_discre_base_date[data_final_discre_base_date$cosine <= target_cosine,]
     
     # When there are several successive changes, there is only one change
-    # Only works for one time window (duration equal to SetWindows)
+    # Only works for one time window (duration equal to window_size)
     dates <- dates_discre["startT"]
     if (length(dates_discre[,1]) > 1){
       for (xx in 1:(length(dates_discre[,1])-1) ){
-        if (dates[xx+1,]==(dates[xx,]+windowSize  )){
+        if (dates[xx+1,]==(dates[xx,]+window_size  )){
           dates_discre <- dates_discre[dates[xx+1,]!=dates_discre$startT,]
         }
       }
@@ -351,7 +351,7 @@ discretization_raw <- function(data, target_cosine=50 ,graph_output=paste0(rept2
     {
       for (xx in 1:(length(dates_discre[,1])-1) )
       {
-        if (dates[xx+1,]==(dates[xx,]+windowSize  ))
+        if (dates[xx+1,]==(dates[xx,]+window_size  ))
         {
           dates_discre <- dates_discre[dates[xx+1,]!=dates_discre$startT,]
         }

@@ -358,15 +358,7 @@ discretization_raw <- function(data, target_cosine=50 ,graph_output=paste0(rept2
       }
     }
     if(length(dates_discre[,1])>0){
-      dates_discre <- as.data.frame(dates_discre)
-      mini_date <- as.Date(min(basebio1$date,na.rm=T), origin="1970-01-01")
-      maxi_date <- as.Date(max(basebio1$date,na.rm=T), origin="1970-01-01")
-      graph_data_lines <- graphviewreal(basebio1, NN=200000,titre = " ") + xlim(mini_date,maxi_date) + geom_vline(data=as.data.frame(dates_discre),aes(xintercept = startT),linetype = "dashed", colour = "blue")
-      graph_line_consine <- ggplot(data_final_discre, aes(x = startT, y = cosine))  +  theme_bw() +  geom_line() + theme(axis.title.y = element_blank(), axis.title.x = element_blank()) + xlim(mini_date,maxi_date) + ylim(c(0,100))
-      graph_data <- graphviewreal(basebio1, NN=200000,titre = " ") + xlim(mini_date,maxi_date)
-      g <- arrangeGrob(graph_line_consine, graph_data_lines, nrow=2 , ncol=1) #generates g
-      ggsave(file=paste0(graph_output, nomfichier,".pdf"), g, dpi = 300) #saves g
-      
+      dates_discre <- as.data.frame(dates_discre)  
       return(list(discretization=TRUE,timeline_chgmnt=dates_discre, datacosine=data_final_discre))
     }else{
       return(list(discretization=FALSE, datacosine=data_final_discre))

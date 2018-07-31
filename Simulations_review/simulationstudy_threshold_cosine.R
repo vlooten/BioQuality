@@ -50,8 +50,8 @@ cosinesimu <- function(percentage=0.5, discritization=T, roundpos=1, datamodel=c
   return(d)
 }
 
-# First simulation: determine threshold for discretization detection (uniform law) ####
-# At each time unit, 10 values are generated
+# Simulations
+# Take a long time, we provide rds files in the github repository
 
 set.seed(1987)
 prop <- 0.5
@@ -70,7 +70,7 @@ for(w in c(F,T) ){
 colnames(res_density) <- c("discretization.y_n","percentage_discret","detected.y_n","threshold")
 # res_density
 saveRDS(res_density,"res_density.rds")
-# Second simulation: determine threshold for discretization detection (normal law) ####
+#
 set.seed(1987)
 prop <- 0.5
 res_density_2 = data.frame()
@@ -87,7 +87,7 @@ for(N in 1:100){
 colnames(res_density_2) <- c("discretization.y_n","percentage_discret","detected.y_n","threshold")
 saveRDS(res_density_2,"res_density_2.rds")
 
-# Third simulation 100%
+#
 set.seed(1987)
 prop <- 1
 res_density_3 = data.frame()

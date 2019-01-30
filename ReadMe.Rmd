@@ -1,14 +1,6 @@
----
-title: "Biology quality and CDW"
-author: "Vincent Looten from the Anita Burgun's Lab"
-date: "31 août 2017"
-output:
-  html_document: default
-  pdf_document: default
----
-
 The objective of these scripts is to provide diagnostic tools of the temporal quality of biological data in a clinical data warehouse.
-These scripts are based on: "WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE" (currently under submission).
+These scripts are based on: "WHAT CAN MILLIONS OF LABORATORY VALUES TELL US ABOUT THE TEMPORAL ASPECT OF DATA QUALITY? STUDY OF DATA SPANNING 17 YEARS IN A CLINICAL DATA WAREHOUSE". Comput Methods Programs Biomed. 2018 Dec 29. pii: S0169-2607(18)30708-9. doi: 10.1016/j.cmpb.2018.12.030.
+https://www.ncbi.nlm.nih.gov/pubmed/30612785
 
 # The data input format
 

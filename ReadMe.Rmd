@@ -5,6 +5,16 @@ Comput Methods Programs Biomed. 2018 Dec 29. pii: S0169-2607(18)30708-9.
 doi: 10.1016/j.cmpb.2018.12.030.
 https://www.ncbi.nlm.nih.gov/pubmed/30612785
 
+Abstract
+OBJECTIVE:
+To identify common temporal evolution profiles in biological data and propose a semi-automated method to these patterns in a clinical data warehouse (CDW).
+MATERIALS AND METHODS:
+We leveraged the CDW of the European Hospital Georges Pompidou and tracked the evolution of 192 biological parameters over a period of 17 years (for 445,000 + patients, and 131 million laboratory test results)
+RESULTS:
+We identified three common profiles of evolution: discretization, breakpoints, and trends. We developed computational and statistical methods to identify these profiles in the CDW. Overall, of the 192 observed biological parameters (87,814,136 values), 135 presented at least one evolution. We identified breakpoints in 30 distinct parameters, discretizations in 32, and trends in 79.
+DISCUSSION AND CONCLUSION:
+our method allowed the identification of several temporal events in the data. Considering the distribution over time of these events, we identified probable causes for the observed profiles: instruments or software upgrades and changes in computation formulas. We evaluated the potential impact for data reuse. Finally, we formulated recommendations to enable safe use and sharing of biological data collection to limit the impact of data evolution in retrospective and federated studies (e.g. the annotation of laboratory parameters presenting breakpoints or trends).
+
 # The data input format
 
 Two examples files have to be put in a directory called 'Example' in the working directory:
